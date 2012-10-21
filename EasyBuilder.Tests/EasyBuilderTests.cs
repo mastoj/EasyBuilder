@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 
 namespace EasyBuilder.Tests
 {
@@ -16,6 +17,13 @@ namespace EasyBuilder.Tests
         public void EasyBuilderShouldSetPropertyValue()
         {
             DummyObject obj = EasyBuilder.BuildA<DummyObject>().SetProperty(y => y.Property1, "Hello");
+            Assert.AreEqual("Hello", obj.Property1);
+        }
+
+        [Test]
+        public void EasyBuilderShouldSetPropertyValueFromFuncResult()
+        {
+            DummyObject obj = EasyBuilder.BuildA<DummyObject>().SetProperty(y => y.Property1, () => "Hello");
             Assert.AreEqual("Hello", obj.Property1);
         }
 

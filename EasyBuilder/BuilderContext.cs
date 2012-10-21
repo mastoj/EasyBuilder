@@ -6,11 +6,11 @@ namespace EasyBuilder
 {
     public class BuilderContext<TInstance> where TInstance : new()
     {
-        private Dictionary<Expression, dynamic> _setters;
+        private Dictionary<Expression, LambdaExpression> _setters;
 
         public BuilderContext()
         {
-            _setters = new Dictionary<Expression, dynamic>();
+            _setters = new Dictionary<Expression, LambdaExpression>();
         }
 
         public static implicit operator TInstance(BuilderContext<TInstance> builderContext)
@@ -25,8 +25,8 @@ namespace EasyBuilder
             {
                 var setterLambdaExpression = setter.Key as LambdaExpression;
                 var parameterExpression = GetParameterExpression(setterLambdaExpression);
-                var valueExpression = Expression.Constant(setter.Value);
-                var assignExpression = Expression.Assign(setterLambdaExpression.Body, valueExpression);
+                var valueExpression = setter.Value;
+                var assignExpression = Expression.Assign(setterLambdaExpression.Body, valueExpression.Body);
                 Expression<Action<TInstance>> assignmentExpression = Expression.Lambda<Action<TInstance>>(assignExpression, parameterExpression);
                 assignmentExpression.Compile()(instance);
             }
@@ -42,7 +42,12 @@ namespace EasyBuilder
 
         public BuilderContext<TInstance> SetProperty<TMember>(Expression<Func<TInstance, TMember>> memberFunc, TMember value)
         {
-            _setters.Add(memberFunc, value);
+            return SetProperty(memberFunc, () => value);
+        }
+
+        public BuilderContext<TInstance> SetProperty<TMember>(Expression<Func<TInstance, TMember>> memberFunc, Expression<Func<TMember>> valueFunc)
+        {
+            _setters.Add(memberFunc, valueFunc);
             return this;
         }
     }
